@@ -2,11 +2,12 @@ import datetime
 from distutils.command.build import build
 from bs4 import BeautifulSoup
 from tkinter import Tk
-from tkinter.filedialog import askopenfile, askopenfilename
+from tkinter.filedialog import askopenfilename
 import re
 import time
 from colorama import init
 from colorama import Fore
+import xlsxwriter
 init()
 
 def main():
@@ -18,6 +19,7 @@ def main():
         html_license = askopenfilename()
         #os.system(os.path.realpath(html_license))
         expired_licese = []
+        excel_license = [] # для форматирования excel
         try:
             with open(html_license, 'r') as f:
                 tmp = f.read()
@@ -60,6 +62,7 @@ def main():
                             expired_licese.append('Срок лицензии истекает: {}\nДаты: {}\nОсталось:{} дней\n'.format(
                                 domain_name, match_license_date, result.days
                             ).encode('utf-8'))
+                            excel_license.append([domain_name, match_license_date, result.days])
                     except IndexError as e:
                         print('Нет лицензии!', e)
                 with open('result.txt', 'wb') as file:
@@ -67,6 +70,16 @@ def main():
                         file.write(val)
                         file.write('{}\n'.format('-'*20).encode('utf-8'))
                     file.write('Количество истекающих лицензий: {}'.format(len(expired_licese)).encode('utf-8'))
+                try:
+                    workbook = xlsxwriter.Workbook('result.xlsx')
+                    worksheet = workbook.add_worksheet()
+                    for i in range(len(expired_licese)):
+                        worksheet.write('A{}'.format(i+1), excel_license[i][0])
+                        worksheet.write('B{}'.format(i+1), f'{excel_license[i][1]}')
+                        worksheet.write('C{}'.format(i+1), excel_license[i][2])
+                    workbook.close()
+                except Exception:
+                    print('Файл result.xlsx занят! Закройте файл и перезапустите программу.')
             print(Fore.YELLOW + 'Количество истекающих лицензий: {}'.format(Fore.WHITE + str(len(expired_licese))))
             print(Fore.GREEN + 'Результаты выполнения храняться в файле result.txt рядом с программой\n')            
         except FileNotFoundError:
