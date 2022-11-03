@@ -12,6 +12,16 @@ init()
 
 def main():
     while True:
+        print(Fore.GREEN + 'Сформируйте отчет в Efros CI используя команду:\n'
+        + 'run cert_mgr show -i $(cert_mgr show|grep loc|cut -c1)|head -5')
+        
+        days_count = 0
+        while not days_count:
+            days_count = input(Fore.YELLOW + 'Укажите интересующее количество дней: \n')
+            try:
+                days_count = int(days_count)
+            except Exception:
+                print('Некорретный ввод! Ожидается число дней')
         keys = input(Fore.WHITE +
             'Выберите файл с лицензиями:\nДля продолжения нажмите любую клавишу'
         )
@@ -55,7 +65,7 @@ def main():
                     try:
                         #print(complete_date(match_license_date[0].strip()))
                         result = complete_date(match_license_date[1].strip()) -datetime.datetime.now()
-                        if result.days <=30:
+                        if result.days <= days_count:
                             print(Fore.RED + 'Срок лицензии истекает: {}\nДаты: {}\nОсталось:{} дней\n'.format(
                                 domain_name, match_license_date, result.days
                             ))
